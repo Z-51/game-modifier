@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "game-modifier": {
+      "command": "game-modifier-mcp",
+      "args": [],
+      "description": "game-modifier structured tools (attach/scan/modify/nl/template/batch/...) over MCP."
+    }
+  }
+}

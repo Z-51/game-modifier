@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "game-modifier"
+version = "0.1.0"
+description = "Token-efficient single-player game memory modifier plugin for Claude Code and Codex CLI"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "game-modifier contributors" }]
+keywords = ["game", "trainer", "memory", "cheat-engine", "claude-code", "codex", "reverse-engineering"]
+
+# Core runtime deps. psutil is required (process/module enumeration); a pure
+# ctypes Toolhelp fallback exists but psutil is the supported path per spec.
+dependencies = [
+    "psutil>=5.9",
+    "PyYAML>=6.0",
+    "tomli>=2.0 ; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+# Optional back-end integrations. The tool degrades gracefully when absent.
+radare2 = ["r2pipe>=1.8"]
+frida = ["frida>=16.0"]
+mcp = ["mcp>=1.0"]
+# Vectorised scan acceleration (numpy is imported lazily; the scanner falls
+# back to a pure-Python slot loop when it is not installed).
+speed = ["numpy>=1.26"]
+# Runtime disassembly (analysis.disasm); imported lazily, degrades gracefully.
+disasm = ["capstone>=5.0"]
+# Symmetric crypto for Unity custom-encrypted saves (save_edit.unity: DES-CBC);
+# imported lazily, degrades gracefully.
+crypto = ["pycryptodome>=3.20"]
+dev = ["pytest>=7.0", "pyflakes>=3.0"]
+all = ["r2pipe>=1.8", "mcp>=1.0", "numpy>=1.26", "capstone>=5.0", "pycryptodome>=3.20", "pytest>=7.0"]
+
+[project.scripts]
+game-modifier = "game_modifier.cli:main"
+game-modifier-mcp = "game_modifier.mcp_server:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+game_modifier = ["templates/builtin/*.yaml", "data/*.toml", "data/il-tool/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

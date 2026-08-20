@@ -1,0 +1,50 @@
+name: strategy
+description: 通用策略/模拟经营游戏模板（资源/人口/单位）。symbol 名称需先通过 scan 建立映射。
+game_types: [strategy, rts, city-builder, simulation, 4x]
+
+options:
+  infinite_money:
+    label: 无限金钱
+    description: 将主要货币锁定在高位。
+    params: [amount]
+    targets:
+      - symbol: resource.money
+        type: int32
+        value: ${amount}
+        strategy: freeze
+
+  infinite_resources:
+    label: 无限资源
+    description: 将木材/矿石/食物等资源锁定在高位。
+    params: [amount]
+    targets:
+      - symbol: resource.wood
+        type: int32
+        value: ${amount}
+        strategy: freeze
+      - symbol: resource.ore
+        type: int32
+        value: ${amount}
+        strategy: freeze
+      - symbol: resource.food
+        type: int32
+        value: ${amount}
+        strategy: freeze
+
+  max_population:
+    label: 人口上限拉满
+    description: 将人口上限设为最大值。
+    targets:
+      - symbol: resource.population_cap
+        type: int32
+        value: max
+        strategy: set
+
+  instant_build:
+    label: 秒建造
+    description: 将建造/研究计时器归零（需映射到计时器地址）。
+    targets:
+      - symbol: build.timer
+        type: int32
+        value: min
+        strategy: freeze

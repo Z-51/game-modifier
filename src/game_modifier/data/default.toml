@@ -1,0 +1,103 @@
+# Default configuration for game-modifier (TOML).
+# Override by copying to ~/.game-modifier/config.toml, or point
+# GAME_MODIFIER_CONFIG at a file, or pass --config on the CLI.
+# Values here are merged with (and overridden by) user config.
+
+[safety]
+# Writes are simulated unless --confirm is passed. Keep this on.
+dry_run = true
+# Refuse to attach to processes with known anti-cheat modules loaded.
+block_anti_cheat = true
+# Snapshot original bytes before every write so `backup restore` can undo.
+auto_backup = true
+# Refuse writes that fall outside a committed, writable memory region.
+require_writable_region = true
+# Upper bound (bytes) for a single write; larger spans are refused.
+max_write_bytes = 4096
+# Extra allowed roots for file-touching tools (file_snapshot / file_restore /
+# save_edit_modify / batch file=). The smart default already allows: the
+# session's game directory, the sessions directory, and common save locations
+# (Documents / Saved Games / AppData / Steam userdata). The OS system
+# directory (%SystemRoot%) is a hard deny that cannot be unlocked here.
+# allowed_paths = ["D:/mods", "E:/game-saves"]
+
+[scan]
+# Cap on candidate addresses kept from a first scan (protects memory/time).
+max_results = 20000
+# Bytes read per chunk while scanning regions.
+chunk_size = 4194304
+# Skip regions larger than this many bytes on a first scan (0 = no cap).
+max_region_bytes = 0
+# Alignment for value scans (1 = every byte, 4 = dword-aligned, etc.).
+# Default 4 matches the common dword case; use 1 only for byte-exact scans.
+alignment = 4
+# Bytes read per chunk while scanning with AOB patterns.
+aob_chunk_size = 4194304
+# Number of parallel scan workers. >1 scans regions concurrently when numpy
+# is available (degrades to single-threaded without numpy or a backend
+# factory). Results are identical to workers=1.
+workers = 4
+# Maximum gap (bytes) merged between adjacent candidate batches.
+batch_gap = 64
+# Candidate sets larger than this are stored in a binary sidecar file
+# (sessions/<id>/scan_candidates.bin) instead of inline session JSON.
+candidates_sidecar_threshold = 5000
+
+[analysis]
+# Pointer-scan search depth (number of dereference hops).
+pointer_scan_max_depth = 2
+# Cap on pointer paths reported per target.
+pointer_scan_max_paths = 500
+# Time budget (seconds) for a single scan before it is aborted.
+scan_timeout = 30
+
+[freeze]
+# Adapt the enforcement interval to observed write pressure.
+adaptive = true
+# Minimum interval (seconds) between freeze re-writes.
+min_interval = 0.05
+# Maximum interval (seconds) between freeze re-writes.
+max_interval = 1.0
+
+[output]
+# json | json-pretty | human
+format = "json"
+
+[paths]
+# Leave empty to use defaults under ~/.game-modifier.
+home = ""
+sessions_dir = ""
+user_templates_dir = ""
+
+[tools]
+# Explicit executable paths override auto-detection. Leave empty to auto-detect.
+radare2 = ""
+rizin = ""
+x64dbg = ""
+x32dbg = ""
+cdb = ""            # WinDbg console debugger
+windbg = ""
+binaryninja = ""
+il2cppdumper = ""   # path to Il2CppDumper.exe / Il2CppDumper.dll
+il2cppinspector = ""
+il_tool = ""        # path to il-tool.exe (Mono IL inspect/patch; packaged copy preferred)
+ue4dumper = ""
+ue4ss = ""
+
+[tools.search_dirs]
+# Extra directories to search when auto-detecting tools.
+extra = []
+
+[ue]
+# FUObjectItem stride (bytes) assumed before probing overrides it.
+item_stride = 24
+# Items per TUObjectArray chunk.
+objects_per_chunk = 65536
+# Maximum number of GObjects chunks to walk.
+max_chunks = 512
+# Entries sampled while validating the item stride.
+probe_items = 64
+# Cap on objects examined during actor enumeration.
+max_objects = 100000
+# Gap (bytes) merged between adjacent addresses in grouped span reads.
+batch_gap = 256

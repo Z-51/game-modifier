@@ -1,0 +1,68 @@
+# Reference default configuration for game-modifier (TOML).
+#
+# This mirrors the packaged default that ships inside the wheel
+# (src/game_modifier/data/default.toml). To customize, copy this file to
+# ~/.game-modifier/config.toml, point $GAME_MODIFIER_CONFIG at it, or pass
+# `--config <path>` on the CLI. User values are merged over these defaults.
+
+[safety]
+# Writes are simulated unless --confirm is passed. Keep this on.
+dry_run = true
+# Refuse to attach to processes with known anti-cheat modules loaded.
+block_anti_cheat = true
+# Snapshot original bytes before every write so `backup restore` can undo.
+auto_backup = true
+# Refuse writes that fall outside a committed, writable memory region.
+require_writable_region = true
+
+[scan]
+# Cap on candidate addresses kept from a first scan (protects memory/time).
+max_results = 20000
+# Bytes read per chunk while scanning regions.
+chunk_size = 4194304
+# Skip regions larger than this many bytes on a first scan (0 = no cap).
+max_region_bytes = 0
+# Alignment for value scans (1 = every byte, 4 = dword-aligned, etc.).
+alignment = 1
+
+[output]
+# json | json-pretty | human
+format = "json"
+
+[paths]
+# Leave empty to use defaults under ~/.game-modifier.
+home = ""
+sessions_dir = ""
+user_templates_dir = ""
+
+[tools]
+# Explicit executable paths override auto-detection. Leave empty to auto-detect.
+radare2 = ""
+rizin = ""
+x64dbg = ""
+x32dbg = ""
+cdb = ""            # WinDbg console debugger
+windbg = ""
+binaryninja = ""
+il2cppdumper = ""   # path to Il2CppDumper.exe / Il2CppDumper.dll
+il2cppinspector = ""
+ue4dumper = ""
+ue4ss = ""
+
+[tools.search_dirs]
+# Extra directories to search when auto-detecting tools.
+extra = []
+
+[ue]
+# FUObjectItem stride (bytes) assumed before probing overrides it.
+item_stride = 24
+# Items per TUObjectArray chunk.
+objects_per_chunk = 65536
+# Maximum number of GObjects chunks to walk.
+max_chunks = 512
+# Entries sampled while validating the item stride.
+probe_items = 64
+# Cap on objects examined during actor enumeration.
+max_objects = 100000
+# Gap (bytes) merged between adjacent addresses in grouped span reads.
+batch_gap = 256

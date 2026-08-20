@@ -1,0 +1,64 @@
+name: rpg
+description: 通用 RPG 修改模板（金币/生命/法力/等级/属性）。symbol 名称需先通过 scan + `name set` 在会话中建立映射。
+game_types: [rpg, jrpg, arpg, roguelike]
+
+options:
+  infinite_health:
+    label: 无限生命
+    description: 将生命值锁定在最大值。
+    targets:
+      - symbol: player.health
+        type: int32
+        value: max
+        strategy: freeze
+
+  infinite_mana:
+    label: 无限法力
+    description: 将法力/魔法值锁定在最大值。
+    targets:
+      - symbol: player.mana
+        type: int32
+        value: max
+        strategy: freeze
+
+  infinite_stamina:
+    label: 无限体力
+    description: 将体力/耐力锁定在最大值。
+    targets:
+      - symbol: player.stamina
+        type: int32
+        value: max
+        strategy: freeze
+
+  set_gold:
+    label: 设置金币
+    description: 将金币设为指定数量（默认 9999，可用 amount 参数覆盖）。
+    params: [amount]
+    targets:
+      - symbol: player.gold
+        type: int32
+        value: ${amount}
+        strategy: set
+
+  set_level:
+    label: 设置等级
+    description: 将人物等级设为指定值。
+    params: [amount]
+    targets:
+      - symbol: player.level
+        type: int32
+        value: ${amount}
+        strategy: set
+
+  max_attributes:
+    label: 属性拉满
+    description: 将攻击与防御设为最大值。
+    targets:
+      - symbol: player.attack
+        type: int32
+        value: max
+        strategy: set
+      - symbol: player.defense
+        type: int32
+        value: max
+        strategy: set

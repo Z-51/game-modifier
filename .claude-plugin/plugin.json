@@ -1,0 +1,23 @@
+{
+  "name": "game-modifier",
+  "version": "0.1.0",
+  "description": "Token-efficient single-player game memory modifier: Chinese natural-language edits, genre templates, batch ops, scanning, and RE-toolchain integration (radare2/x64dbg/WinDbg/Il2CppDumper/UE4SS) exposed as a CLI + MCP server.",
+  "author": {
+    "name": "game-modifier contributors"
+  },
+  "keywords": [
+    "game",
+    "trainer",
+    "memory",
+    "cheat-engine",
+    "reverse-engineering",
+    "unity",
+    "il2cpp",
+    "unreal",
+    "single-player"
+  ],
+  "commands": "./commands",
+  "agents": "./agents",
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json"
+}

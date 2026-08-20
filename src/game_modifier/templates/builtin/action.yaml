@@ -1,0 +1,63 @@
+name: action
+description: 通用动作/射击游戏模板（生命/弹药/护甲/一击必杀）。symbol 名称需先通过 scan 建立映射。
+game_types: [action, fps, tps, shooter, hack-and-slash]
+
+options:
+  infinite_health:
+    label: 无限生命
+    description: 将生命值锁定在最大值（无敌）。
+    targets:
+      - symbol: player.health
+        type: int32
+        value: max
+        strategy: freeze
+
+  infinite_ammo:
+    label: 无限弹药
+    description: 将当前弹夹与备弹锁定在最大值。
+    targets:
+      - symbol: weapon.ammo
+        type: int32
+        value: max
+        strategy: freeze
+      - symbol: weapon.ammo_reserve
+        type: int32
+        value: max
+        strategy: freeze
+
+  no_reload:
+    label: 无需换弹
+    description: 冻结当前弹夹数量，射击不减少。
+    targets:
+      - symbol: weapon.ammo
+        type: int32
+        strategy: freeze
+        value: max
+
+  infinite_armor:
+    label: 无限护甲
+    description: 将护甲/护盾锁定在最大值。
+    targets:
+      - symbol: player.armor
+        type: int32
+        value: max
+        strategy: freeze
+
+  one_hit_kill:
+    label: 一击必杀
+    description: 将攻击力设为最大值。
+    targets:
+      - symbol: player.attack
+        type: int32
+        value: max
+        strategy: set
+
+  infinite_grenades:
+    label: 无限手雷
+    description: 冻结手雷数量。
+    params: [amount]
+    targets:
+      - symbol: player.grenades
+        type: int32
+        value: ${amount}
+        strategy: freeze

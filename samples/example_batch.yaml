@@ -1,0 +1,15 @@
+# Example batch file for game-modifier.
+# Run: game-modifier batch run --session <id> samples/example_batch.yaml --confirm
+# 'confirm: true' below applies writes without needing the CLI flag.
+confirm: true
+stop_on_error: true
+operations:
+  - nl: "将金币设为777"
+  - modify:
+      symbol: player.move_speed
+      type: float
+      value: 9.0
+  - read:
+      symbol: player.gold
+  - read:
+      symbol: player.move_speed
