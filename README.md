@@ -1,6 +1,6 @@
 # game-modifier
 
-**面向 AI Agent 的单机 / 离线游戏内存修改器**——一条 CLI 命令一个 JSON 行，外加一套 MCP 结构化工具服务器。附加一次、会话复用、符号化地址、确定性中文 NLP，能把"找地址 → 改数值"和"修改游戏逻辑"的 token 开销压到最低。
+**面向 AI Agent 的单机 / 离线游戏内存修改器**——一条 CLI 命令一个 JSON 行，外加一套 MCP 结构化工具服务器。把"找地址 → 改数值"和"修改游戏逻辑"的 token 开销压到最低。
 
 > ⚠️ **仅限单机 / 离线游戏。** 检测到反作弊时会立即拒绝附加（`E_ANTI_CHEAT`）。不支持联机作弊与 DRM 对抗。详见[安全声明](#安全声明)。
 
@@ -19,9 +19,7 @@
 
 ## 安装
 
-三种常见场景：
-
-将项目下载下来、解压，在项目目录中选择以下其中一个指令进行安装。
+1. 将项目下载下来、解压，在项目目录中选择以下其中一个指令进行安装。
 
 ```powershell
 # 完整安装（所有功能）
@@ -35,8 +33,39 @@ pip install ".[mcp]"
 
 
 ```
+2. 安装后配置到你的AI agent。让它们识别到game-modifier。（可以用AI来帮你）
+
+**例如：**
+
+**Codex CLI**
+
+  在 `~/.codex/config.toml` 中需要添加：
+
+```
+[mcp_servers.game-modifier]
+command = "<你的项目目录>/.venv/Scripts/game-modifier-mcp.exe"
+args = []
+```
+
+**Claude CLI**
+
+  在 `~/.claude/mcp.json` 中需要添加：
+
+```
+"game-modifier": {
+  "command": "<你的项目目录>/.venv/Scripts/game-modifier-mcp.exe",
+  "args": [],
+  "description": "game-modifier structured tools (attach/scan/modify/nl/template/batch/...) over MCP."
+}
+```
 
 ### 安装后验证
+
+
+**在你的AI agent会话框里面输入`/mcp`,即可查看是否显示game-modifier，来确认是否安装完毕。**
+
+
+以下指令是检查当前电脑是否有game-modifier工具
 
 ```powershell
 game-modifier --version                 # {"ok": true, "command": "version", "data": {"version": "0.1.0"}}
@@ -45,7 +74,9 @@ game-modifier toolchain detect          # 外部逆向工具探测（缺失自�
 pytest tests/                           # 开发环境：900 collected / 899 passed / 1 skipped
 ```
 
-完整安装指南（wheel 分发安装 / PyPI 规划 / 升级 / 卸载 / 工具链 AI 自动安装流程）见 [INSTALL_GUIDE.md](INSTALL_GUIDE.md)。
+
+
+完整安装指南（wheel 分发安装 / 升级 / 卸载 / 工具链 AI 自动安装流程）见 [INSTALL_GUIDE.md](INSTALL_GUIDE.md)。
 
 ---
 
