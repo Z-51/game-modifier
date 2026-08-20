@@ -1,20 +1,51 @@
 # game-modifier
 
-**面向 AI Agent 的单机 / 离线游戏内存修改器**——一条 CLI 命令一个 JSON 行，外加一套 MCP 结构化工具服务器。附加一次、会话复用、符号化地址、确定性中文 NLP，把"找地址 → 改数值"的 token 开销压到最低。
+**面向 AI Agent 的单机 / 离线游戏内存修改器**——一条 CLI 命令一个 JSON 行，外加一套 MCP 结构化工具服务器。附加一次、会话复用、符号化地址、确定性中文 NLP，能把"找地址 → 改数值"和"修改游戏逻辑"的 token 开销压到最低。
 
-> ⚠️ **仅限单机 / 离线游戏。** 检测到反作弊时立即拒绝附加（`E_ANTI_CHEAT`）。不支持联机作弊与 DRM 对抗。详见[安全声明](#安全声明)。
+> ⚠️ **仅限单机 / 离线游戏。** 检测到反作弊时会立即拒绝附加（`E_ANTI_CHEAT`）。不支持联机作弊与 DRM 对抗。详见[安全声明](#安全声明)。
 
 ---
 
 ## 要点速览
 
 - **Python**：≥ 3.10（`requires-python = ">=3.10"`）
-- **目标平台**：Windows 10 / 11（内存读写后端为 Windows API；附加需管理员终端）
+- **现目前支持的平台**：Windows 10 / 11（内存读写后端为 Windows API；附加需管理员终端）
 - **版本**：`0.1.0` ｜ 分发包名 `game-modifier`，导入名 `game_modifier`
-- **测试基线**：900 collected / 899 passed / 1 skipped（skip 为环境跨进程调试权限不足时按设计自动跳过，非缺陷）
-- **MCP 工具**：default profile 84 个（另有常驻 `tools_catalog`）/ readonly profile 54 个（近期实测；精确成员与计数以运行时 `tools_catalog` 工具返回为准，或重跑 `scripts/refresh_metrics.py`，文档不写死以免漂移）
+- **MCP 工具**：default profile 84 个（另有常驻 `tools_catalog`）/ readonly profile 54 个
 - **引擎识别**：Unity Il2Cpp / Unity Mono / Unreal / NW.js / RPG Maker / Ren'Py / WebView
 - **许可证**：MIT（见[许可证与免责](#许可证与免责)）
+
+---
+
+## 安装
+
+三种常见场景：
+
+将项目下载下来、解压，在项目目录中选择以下其中一个指令进行安装。
+
+```powershell
+# 完整安装（所有功能）
+pip install ".[all]"
+
+# 最小安装（仅 CLI，核心依赖 psutil + PyYAML + tomli[Python<3.11]）
+pip install .
+
+# 含 MCP 服务器（暴露结构化工具给 Agent）
+pip install ".[mcp]"
+
+
+```
+
+### 安装后验证
+
+```powershell
+game-modifier --version                 # {"ok": true, "command": "version", "data": {"version": "0.1.0"}}
+python -c "import game_modifier; from game_modifier.memory import get_backend; from game_modifier.nlp import parse; print('import OK')"
+game-modifier toolchain detect          # 外部逆向工具探测（缺失自动降级，不阻塞）
+pytest tests/                           # 开发环境：900 collected / 899 passed / 1 skipped
+```
+
+完整安装指南（wheel 分发安装 / PyPI 规划 / 升级 / 卸载 / 工具链 AI 自动安装流程）见 [INSTALL_GUIDE.md](INSTALL_GUIDE.md)。
 
 ---
 
@@ -48,6 +79,7 @@
 | `job` | 后台任务管理：status / list / cancel（部分结果保留） |
 | `macro` | 宏定义 / 执行 / 管理 |
 | `session` | 会话快照 / 恢复、键值笔记（`session_notes`）、审计日志（`audit_tail`）、大结果回读（`results_read`，限会话目录内分页） |
+
 
 ---
 
@@ -107,32 +139,18 @@ game-modifier modify --session s1 --symbol player.gold --value 9999 --confirm
 
 ## 安全声明
 
-本项目**仅面向单机 / 离线游戏的个人研究与学习**，安全约束内置于工具本身：
+本项目**仅面向单机 / 离线游戏的个人研究与学习**：
 
-1. **反作弊即拒绝**：`attach` 检测到反作弊组件时立即拒绝附加并返回 `E_ANTI_CHEAT`，不提供绕过手段；`find-writers` 等敏感能力对此类会话同样直接拒绝。
+1. **拒绝反作弊**：`attach` 检测到反作弊组件时会立即拒绝附加并返回 `E_ANTI_CHEAT`，不提供绕过手段；`find-writers` 等敏感能力对此类会话同样直接拒绝。
 2. **默认 dry-run**：所有写操作（`modify` / `nl` / `batch` / `template apply` / `save-edit modify` / `il patch` 等）默认只预览，必须显式 `--confirm`（MCP `confirm=true`）才落盘 / 写内存；高风险区域（代码段 / 只读 / 未知区域）写入还需额外 `confirm_code`（`modify` / `nl` / `batch` / `macro` 语义一致）。
-3. **自动备份与审计**：写入前自动备份原值（`backup restore` 回滚），存档写入自动生成 `.bak`；每次确认写入追加到 `sessions/<id>/audit.jsonl`。
+3. **会自动备份与审计**：写入前自动备份原值（`backup restore` 回滚），存档写入自动生成 `.bak`；每次确认写入追加到 `sessions/<id>/audit.jsonl`。
 4. **只读优先的 profile**：MCP 服务器可 `--profile readonly` 启动，剔除全部写工具；另有 `dry-run` / `symbols` / `limited` 细粒度 profile。
 5. **文件路径白名单**：文件类工具（`file snapshot` / `file restore` / `save-edit modify` / `batch run --file`）只接受白名单根目录内的路径——智能默认放行游戏目录、sessions 目录与常见存档位置（Documents / AppData / Saved Games / Steam userdata），可在配置 `[safety] allowed_paths` 追加；系统目录（`%SystemRoot%`）硬拒绝，越界报 `E_PATH_NOT_ALLOWED`。
 6. **会话写串行化**：同一会话的写操作在进程内（锁）与跨进程（锁文件，CLI ↔ MCP 服务器）两个层面串行，冲突时报 `E_SESSION_BUSY`，杜绝并发写会话状态互相覆盖。
-7. **明确不支持**：联机游戏作弊、反作弊绕过、DRM 破解。使用者须自行确认目标游戏的使用条款与当地法律法规。
+7. **明确的不支持**：联机游戏作弊、反作弊绕过、DRM 破解。使用者须自行确认目标游戏的使用条款与当地法律法规。
 
 ---
 
-## 安装
-
-三种常见场景：
-
-```powershell
-# 最小安装（仅 CLI，核心依赖 psutil + PyYAML + tomli[Python<3.11]）
-pip install .
-
-# 含 MCP 服务器（暴露结构化工具给 Agent）
-pip install ".[mcp]"
-
-# 开发模式（可编辑安装 + 测试依赖）
-pip install -e ".[dev]"
-```
 
 ### 可选依赖分组速查
 
@@ -144,23 +162,12 @@ pip install -e ".[dev]"
 | `frida` | `frida>=16.0` | 动态插桩（可选后端） |
 | `mcp` | `mcp>=1.0` | MCP 服务器 `game-modifier-mcp` |
 | `speed` | `numpy>=1.26` | 扫描向量化加速（未装回落纯 Python） |
-| `disasm` | `capstone>=5.0` | `disasm` 运行时反汇编（未装报 `E_DEPENDENCY_MISSING`） |
+| `disasm` | `capstone>=5.0` | `disasm` 运行时反汇编（未装时，会报 `E_DEPENDENCY_MISSING`） |
 | `crypto` | `pycryptodome>=3.20` | `save-edit` 编辑 Unity 自定义加密存档 |
 | `dev` | `pytest>=7.0`, `pyflakes>=3.0` | 测试与静态检查 |
 | `all` | r2pipe + mcp + numpy + capstone + pycryptodome + pytest | 常用完整组合（**不含 frida**，需要时用 `".[all,frida]"`） |
 
-### 安装后验证
 
-```powershell
-game-modifier --version                 # {"ok": true, "command": "version", "data": {"version": "0.1.0"}}
-python -c "import game_modifier; from game_modifier.memory import get_backend; from game_modifier.nlp import parse; print('import OK')"
-game-modifier toolchain detect          # 外部逆向工具探测（缺失自动降级，不阻塞）
-pytest tests/                           # 开发环境：900 collected / 899 passed / 1 skipped
-```
-
-完整安装指南（wheel 分发安装 / PyPI 规划 / 升级 / 卸载 / 工具链 AI 自动安装流程）见 [INSTALL_GUIDE.md](INSTALL_GUIDE.md)。
-
----
 
 ## 文档导航
 
@@ -168,7 +175,7 @@ pytest tests/                           # 开发环境：900 collected / 899 pas
 | --- | --- |
 | [USER_MANUAL.md](USER_MANUAL.md) | 完整命令参考与使用流程（含引擎专题：UE / Il2Cpp / Mono / 存档型游戏） |
 | [AI_AGENT_GUIDE.md](AI_AGENT_GUIDE.md) | Agent 集成与 token 优化实践、标准工作流、错误码表 |
-| [AGENTS.md](AGENTS.md) | 面向编码 Agent 的速查说明（安全契约 / 错误处理 / 工具链安装） |
+| [AGENTS.md](AGENTS.md) | 面向编码 Agent 的速查说明（安全约定 / 错误处理 / 工具链安装） |
 | [INSTALL_GUIDE.md](INSTALL_GUIDE.md) | 安装指南（源码 / wheel / 升级 / 卸载 / 工具自动安装） |
 | [HANDOVER_GUIDE.md](HANDOVER_GUIDE.md) | 项目交接与架构说明 |
 | [skills/game-modifier/SKILL.md](skills/game-modifier/SKILL.md) | Agent Skill 定义 |
@@ -178,6 +185,5 @@ pytest tests/                           # 开发环境：900 collected / 899 pas
 ---
 
 ## 许可证与免责
-
-- `pyproject.toml` 声明许可证为 **MIT**（正式 LICENSE 文件待补）。
+- MIT
 - 本工具仅供单机 / 离线游戏的个人研究与学习使用。使用本工具可能违反目标游戏的用户协议或当地法律法规，**由此产生的一切后果由使用者自行承担**。作者不对任何滥用行为负责，亦不提供联机作弊、反作弊绕过相关支持。
